@@ -25,3 +25,18 @@
     justify-content: space-between;
     align-items: center;
 }
+.pagination{
+    text-align: center;
+    margin-bottom: 20px;
+}
+.btn{
+    background-color: rgb(246, 245, 245);
+    /* border: 1px solid gray; */
+
+}
+.pagination .selected{
+    background-color: azure;
+}
+.pagination button{
+    background-color: rgb(246, 245, 245);
+}
