@@ -10,12 +10,12 @@ const Shop = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [itemsPerPage, setItemsPerPage] = useState(10)
     const [cart, setCart] = useState([])
-    const {totalProducts}= useLoaderData()
+    const { totalProducts } = useLoaderData()
 
     //const itemsPerPage = 10; //todo dynamic
     const totalPage = Math.ceil(totalProducts / itemsPerPage)
     const pageNumbers = [...Array(totalPage).keys()];
-    
+
     console.log(pageNumbers)
 
     // useEffect(() => {
@@ -37,22 +37,38 @@ const Shop = () => {
 
     useEffect(() => {
         const storedCart = getShoppingCart();
-        const savedCart = [];
-        // step 1: get id of the addedProduct
-        for (const id in storedCart) {
-            // step 2: get product from products state by using id
-            const addedProduct = products.find(product => product._id === id)
-            if (addedProduct) {
-                // step 3: add quantity
-                const quantity = storedCart[id];
-                addedProduct.quantity = quantity;
-                // step 4: add the added product to the saved cart
-                savedCart.push(addedProduct);
-            }
-            // console.log('added Product', addedProduct)
-        }
-        // step 5: set the cart
-        setCart(savedCart);
+
+
+        const ids = Object.keys(storedCart)
+        console.log(ids)
+        fetch('http://localhost:5000/productsByIds', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(ids)
+        })
+            .then(res => res.json())
+            .then(cartProducts => {
+                const savedCart = [];
+                // step 1: get id of the addedProduct
+                for (const id in storedCart) {
+                    // step 2: get product from products state by using id
+                    const addedProduct = cartProducts.find(product => product._id === id)
+                    if (addedProduct) {
+                        // step 3: add quantity
+                        const quantity = storedCart[id];
+                        addedProduct.quantity = quantity;
+                        // step 4: add the added product to the saved cart
+                        savedCart.push(addedProduct);
+                    }
+                    // console.log('added Product', addedProduct)
+                }
+                // step 5: set the cart
+                setCart(savedCart);
+            })
+
+
     }, [products])
 
     const handleAddToCart = (product) => {
@@ -87,38 +103,38 @@ const Shop = () => {
     }
 
     return (
-       <>
-             <div className='shop-container'>
-            <div className="products-container">
-                {
-                    products.map(product => <Product
-                        key={product._id}
-                        product={product}
-                        handleAddToCart={handleAddToCart}
-                    ></Product>)
-                }
+        <>
+            <div className='shop-container'>
+                <div className="products-container">
+                    {
+                        products.map(product => <Product
+                            key={product._id}
+                            product={product}
+                            handleAddToCart={handleAddToCart}
+                        ></Product>)
+                    }
+                </div>
+                <div className="cart-container">
+                    <Cart
+                        cart={cart}
+                        handleClearCart={handleClearCart}
+                    >
+                        <Link className='proceed-link' to="/orders">
+                            <button className='btn-proceed'>Review Order</button>
+                        </Link>
+                    </Cart>
+                </div>
             </div>
-            <div className="cart-container">
-                <Cart
-                    cart={cart}
-                    handleClearCart={handleClearCart}
-                >
-                    <Link className='proceed-link' to="/orders">
-                        <button className='btn-proceed'>Review Order</button>
-                    </Link>
-                </Cart>
-            </div>
-        </div>
 
-        <div className='pagination'>
-            <p>Current Page: {currentPage} and items per page: {itemsPerPage}</p>
+            <div className='pagination'>
+                <p>Current Page: {currentPage} and items per page: {itemsPerPage}</p>
                 {
-                   pageNumbers.map(number => <button
-                   className={currentPage === number ? 'selected' : ''}
-                   key={number}
-                   
-                   onClick={() => setCurrentPage(number)}
-                   >{number}</button>) 
+                    pageNumbers.map(number => <button
+                        className={currentPage === number ? 'selected' : ''}
+                        key={number}
+
+                        onClick={() => setCurrentPage(number)}
+                    >{number + 1}</button>)
                 }
                 <select value={itemsPerPage} onChange={handleSelectChange}>
                     {options.map(option => (
@@ -127,8 +143,8 @@ const Shop = () => {
                         </option>
                     ))}
                 </select>
-        </div>
-       </>
+            </div>
+        </>
     );
 };
 
